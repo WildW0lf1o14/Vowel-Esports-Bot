@@ -6,6 +6,8 @@ Date of Creation: 03/08/2026
 Date of Last Alterations: 03/08/2026
 
 
+
+
 discord bot for use within the Vowel esports org for roster related presentation and general server uses, with patches needed to get to full serviceability.
 
 bot.py is the main bots source code, bot.test is code to test if its working and there is a backup of the bots code as needed.
