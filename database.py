@@ -49,7 +49,10 @@ def initialise_database():
     """
     Creates required database tables
     """
-
+    #permissions checker
+    if role not in VALID_ROLES:
+    return False
+    
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -349,6 +352,33 @@ def update_role(discord_id, role):
 
 if __name__ == "__main__":
 
+    #group rosters together function
+    def get_roster_by_role():
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT *
+    FROM players
+    WHERE active = 1
+    ORDER BY
+    CASE role
+
+        WHEN 'Manager' THEN 1
+        WHEN 'Captain' THEN 2
+        WHEN 'Coach' THEN 3
+        WHEN 'Tank' THEN 4
+        WHEN 'DPS' THEN 5
+        WHEN 'Support' THEN 6
+
+    END
+    """)
+
+    players = cursor.fetchall()
+
+    connection.close()
+    return players
     initialise_database()
 
     print("Database successfully created.")
