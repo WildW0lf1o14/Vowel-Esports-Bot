@@ -5,19 +5,44 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from dotenv import load_dotenv
+import os
+
 import database
+
+
+# -----------------------------------
+# Environment Configuration
+# -----------------------------------
+
+load_dotenv()
+
+TOKEN = os.getenv("DISCORD_TOKEN")
+
+
+
+# -----------------------------------
+# VOWL Roles
+# -----------------------------------
+
+VALID_ROLES = [
+    "Manager",
+    "Captain",
+    "Coach",
+    "Tank",
+    "DPS",
+    "Support"
+]
+
 
 
 # -----------------------------------
 # Bot Configuration
 # -----------------------------------
 
-#BOT TOKEN
-TOKEN = DISCORD_TOKEN.env
-
-
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 
 
 bot = commands.Bot(
@@ -61,12 +86,12 @@ async def on_ready():
 
 @bot.tree.command(
     name="addplayer",
-    description="Add a player to the VOWEL roster"
+    description="Add a player to the VOWL roster"
 )
 @app_commands.describe(
     member="Discord member",
     ign="In-game name",
-    role="Player role",
+    role="VOWL role",
     real_name="Optional real name"
 )
 async def addplayer(
@@ -76,6 +101,15 @@ async def addplayer(
     role: str,
     real_name: str = None
 ):
+
+    if role not in VALID_ROLES:
+
+        await interaction.response.send_message(
+            "❌ Invalid role. Use: Manager, Captain, Coach, Tank, DPS or Support."
+        )
+
+        return
+
 
     result = database.add_player(
         discord_id=str(member.id),
@@ -171,9 +205,16 @@ async def playerinfo(
         value=player["discord_name"]
     )
 
+
     embed.add_field(
         name="Role",
         value=player["role"]
+    )
+
+
+    embed.add_field(
+        name="Team",
+        value=player["team"]
     )
 
 
@@ -185,7 +226,7 @@ async def playerinfo(
 
     embed.add_field(
         name="Opponent Contact",
-        value="Yes" if player["is_contact"] else "No"
+        value="📞 Yes" if player["is_contact"] else "No"
     )
 
 
@@ -207,13 +248,13 @@ async def playerinfo(
 
 @bot.tree.command(
     name="roster",
-    description="Display current roster"
+    description="Display current VOWL roster"
 )
 async def roster(
     interaction: discord.Interaction
 ):
 
-    players = database.get_roster()
+    players = database.get_roster_by_role()
 
 
     if not players:
@@ -227,28 +268,44 @@ async def roster(
 
 
     embed = discord.Embed(
-        title="VOWEL Esports Roster",
+        title="VOWL Esports Overwatch Roster",
         colour=discord.Colour.green()
     )
 
 
-    for player in players:
+    for role in VALID_ROLES:
 
-        badges = ""
-
-        if player["is_captain"]:
-            badges += " ⭐ Captain"
-
-        if player["is_contact"]:
-            badges += " 📞 Contact"
+        members = []
 
 
-        embed.add_field(
-            name=player["ign"],
-            value=
-            f"Role: {player['role']}{badges}",
-            inline=False
-        )
+        for player in players:
+
+            if player["role"] == role:
+
+                mention = f"<@{player['discord_id']}>"
+
+                members.append(
+                    mention
+                )
+
+
+        if members:
+
+            embed.add_field(
+                name=role.upper(),
+                value="\n".join(members),
+                inline=False
+            )
+
+
+        else:
+
+            embed.add_field(
+                name=role.upper(),
+                value="No player assigned",
+                inline=False
+            )
+
 
 
     await interaction.response.send_message(
@@ -281,6 +338,7 @@ async def setcaptain(
         await interaction.response.send_message(
             f"⭐ {member.display_name} is now captain."
         )
+
 
     else:
 
@@ -315,6 +373,7 @@ async def setcontact(
             f"📞 {member.display_name} is now an opponent contact."
         )
 
+
     else:
 
         await interaction.response.send_message(
@@ -337,6 +396,15 @@ async def setrole(
     role: str
 ):
 
+    if role not in VALID_ROLES:
+
+        await interaction.response.send_message(
+            "❌ Invalid role. Use: Manager, Captain, Coach, Tank, DPS or Support."
+        )
+
+        return
+
+
     result = database.update_role(
         str(member.id),
         role
@@ -348,6 +416,7 @@ async def setrole(
         await interaction.response.send_message(
             f"✅ {member.display_name}'s role updated to {role}."
         )
+
 
     else:
 
