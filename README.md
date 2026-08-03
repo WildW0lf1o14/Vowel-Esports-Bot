@@ -1,6 +1,8 @@
 # Vowel-Esports-Bot
 Bot Author: Stephen (WildW0lf)
+
 Date of Creation: 03/08/2026
+
 Date of Last Alterations: 03/08/2026
 
 
