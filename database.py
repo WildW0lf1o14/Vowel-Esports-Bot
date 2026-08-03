@@ -7,7 +7,17 @@ import os
 
 
 DATABASE_PATH = "data/vowel.db"
-
+#-------------------------------
+#Valid roles
+#-------------------------------
+VALID_ROLES = [
+    "Manager",
+    "Captain",
+    "Coach",
+    "Tank",
+    "DPS",
+    "Support"
+]
 
 # -------------------------------
 # Database Connection
