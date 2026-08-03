@@ -12,8 +12,8 @@ import database
 # Bot Configuration
 # -----------------------------------
 
-#note for later we need to replace this with the actual bot token
-TOKEN = "YOUR_BOT_TOKEN_HERE"
+#BOT TOKEN
+TOKEN = "MTUzMzc5MTU4ODEyNjU2MDI5Ng.Gls17X.jmpr-J2kijNpMn-8Qzrqv4YoG8_YA_56y28leE"
 
 
 intents = discord.Intents.default()
