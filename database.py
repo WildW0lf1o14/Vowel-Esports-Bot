@@ -7,9 +7,12 @@ import os
 
 
 DATABASE_PATH = "data/vowel.db"
-#-------------------------------
-#Valid roles
-#-------------------------------
+
+
+# -------------------------------
+# Valid VOWL Roles
+# -------------------------------
+
 VALID_ROLES = [
     "Manager",
     "Captain",
@@ -19,22 +22,18 @@ VALID_ROLES = [
     "Support"
 ]
 
+
 # -------------------------------
 # Database Connection
 # -------------------------------
 
 def get_connection():
-    """
-    Creates and returns a database connection
-    """
 
-    # Create data folder if missing
     if not os.path.exists("data"):
         os.makedirs("data")
 
     connection = sqlite3.connect(DATABASE_PATH)
 
-    # Allows accessing columns by name
     connection.row_factory = sqlite3.Row
 
     return connection
@@ -46,13 +45,7 @@ def get_connection():
 # -------------------------------
 
 def initialise_database():
-    """
-    Creates required database tables
-    """
-    #permissions checker
-    if role not in VALID_ROLES:
-    return False
-    
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -70,9 +63,9 @@ def initialise_database():
 
         real_name TEXT,
 
-        team TEXT DEFAULT 'VOWEL Esports',
+        team TEXT DEFAULT 'Overwatch',
 
-        role TEXT,
+        role TEXT NOT NULL,
 
         is_captain INTEGER DEFAULT 0,
 
@@ -101,8 +94,13 @@ def add_player(
         ign,
         real_name=None,
         role=None,
-        team="VOWEL Esports"
+        team="Overwatch"
 ):
+
+    if role not in VALID_ROLES:
+
+        return False
+
 
     connection = get_connection()
     cursor = connection.cursor()
@@ -239,6 +237,45 @@ def get_roster():
 
 
 # -------------------------------
+# Get Roster Sorted By Role
+# -------------------------------
+
+def get_roster_by_role():
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+
+    cursor.execute("""
+    SELECT *
+    FROM players
+    WHERE active = 1
+
+    ORDER BY
+    CASE role
+
+        WHEN 'Manager' THEN 1
+        WHEN 'Captain' THEN 2
+        WHEN 'Coach' THEN 3
+        WHEN 'Tank' THEN 4
+        WHEN 'DPS' THEN 5
+        WHEN 'Support' THEN 6
+
+    END
+    """)
+
+
+    players = cursor.fetchall()
+
+
+    connection.close()
+
+
+    return players
+
+
+
+# -------------------------------
 # Update Captain Status
 # -------------------------------
 
@@ -318,6 +355,11 @@ def set_contact(discord_id, status=True):
 
 def update_role(discord_id, role):
 
+    if role not in VALID_ROLES:
+
+        return False
+
+
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -330,7 +372,10 @@ def update_role(discord_id, role):
     WHERE discord_id = ?
 
     """,
-    (role,))
+    (
+        role,
+        discord_id
+    ))
 
 
     connection.commit()
@@ -352,33 +397,6 @@ def update_role(discord_id, role):
 
 if __name__ == "__main__":
 
-    #group rosters together function
-    def get_roster_by_role():
-
-    connection = get_connection()
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT *
-    FROM players
-    WHERE active = 1
-    ORDER BY
-    CASE role
-
-        WHEN 'Manager' THEN 1
-        WHEN 'Captain' THEN 2
-        WHEN 'Coach' THEN 3
-        WHEN 'Tank' THEN 4
-        WHEN 'DPS' THEN 5
-        WHEN 'Support' THEN 6
-
-    END
-    """)
-
-    players = cursor.fetchall()
-
-    connection.close()
-    return players
     initialise_database()
 
     print("Database successfully created.")
