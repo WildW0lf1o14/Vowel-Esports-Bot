@@ -12,6 +12,7 @@ import database
 # Bot Configuration
 # -----------------------------------
 
+#note for later we need to replace this with the actual bot token
 TOKEN = "YOUR_BOT_TOKEN_HERE"
 
 
